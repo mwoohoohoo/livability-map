@@ -45,7 +45,7 @@ export default function ScoreSheet({
               w-[360px]
               shadow-2xl
               md:block
-              lg:hidden
+              min-[1580px]:hidden
             "
             initial={{
               x: "-100%",

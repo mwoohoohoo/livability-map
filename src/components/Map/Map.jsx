@@ -107,8 +107,14 @@ export default function Map() {
     }
 
     function updateDimensions() {
-      setWidth(element.clientWidth);
+      const nextWidth = element.clientWidth;
+
+      setWidth(nextWidth);
       setHeight(element.clientHeight);
+
+      if (nextWidth >= 1580) {
+        setFiltersOpen(false);
+      }
     }
 
     updateDimensions();
