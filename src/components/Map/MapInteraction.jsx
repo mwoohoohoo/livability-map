@@ -1,7 +1,56 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 
 import { createCellIndex, findCellAtPoint } from "./mapUtils";
+
+function constrainTransform(transform, underlyingGrid, projection, element) {
+  if (!underlyingGrid || !projection || !element) {
+    return transform;
+  }
+
+  const [[minX, minY], [maxX, maxY]] = d3
+    .geoPath(projection)
+    .bounds(underlyingGrid);
+
+  const viewportWidth = element.clientWidth;
+  const viewportHeight = element.clientHeight;
+
+  const mapWidth = (maxX - minX) * transform.k;
+  const mapHeight = (maxY - minY) * transform.k;
+
+  let x = transform.x;
+  let y = transform.y;
+
+  // --------------------------------
+  // Horizontal boundary
+  // --------------------------------
+
+  if (mapWidth <= viewportWidth) {
+    x = (viewportWidth - mapWidth) / 2 - minX * transform.k;
+  } else {
+    const minTranslate = viewportWidth - maxX * transform.k;
+
+    const maxTranslate = -minX * transform.k;
+
+    x = Math.max(minTranslate, Math.min(maxTranslate, x));
+  }
+
+  // --------------------------------
+  // Vertical boundary
+  // --------------------------------
+
+  if (mapHeight <= viewportHeight) {
+    y = (viewportHeight - mapHeight) / 2 - minY * transform.k;
+  } else {
+    const minTranslate = viewportHeight - maxY * transform.k;
+
+    const maxTranslate = -minY * transform.k;
+
+    y = Math.max(minTranslate, Math.min(maxTranslate, y));
+  }
+
+  return d3.zoomIdentity.translate(x, y).scale(transform.k);
+}
 
 export default function MapInteraction({
   grid,
@@ -14,20 +63,18 @@ export default function MapInteraction({
   const interactionRef = useRef(null);
   const dragRef = useRef(null);
 
-  const [cellIndex, setCellIndex] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // --------------------------------
   // Cell index
   // --------------------------------
 
-  useEffect(() => {
+  const cellIndex = useMemo(() => {
     if (!grid || !projection) {
-      setCellIndex(null);
-      return;
+      return null;
     }
 
-    const index = createCellIndex(grid, projection);
-    setCellIndex(index);
+    return createCellIndex(grid, projection);
   }, [grid, projection]);
 
   // --------------------------------
@@ -48,7 +95,16 @@ export default function MapInteraction({
         return event.type !== "mousedown";
       })
       .on("zoom", (event) => {
-        onZoom(event.transform);
+        const constrainedTransform = constrainTransform(
+          event.transform,
+          underlyingGrid,
+          projection,
+          element,
+        );
+
+        onZoom(constrainedTransform);
+
+        d3.select(element).property("__zoom", constrainedTransform);
       });
 
     d3.select(element).call(zoom);
@@ -57,61 +113,6 @@ export default function MapInteraction({
       d3.select(element).on(".zoom", null);
     };
   }, [underlyingGrid, projection, onZoom]);
-
-  // --------------------------------
-  // Boundary
-  // --------------------------------
-
-  function constrainTransform(transform) {
-    if (!underlyingGrid || !projection || !interactionRef.current) {
-      return transform;
-    }
-
-    const element = interactionRef.current;
-
-    const [[minX, minY], [maxX, maxY]] = d3
-      .geoPath(projection)
-      .bounds(underlyingGrid);
-
-    const viewportWidth = element.clientWidth;
-    const viewportHeight = element.clientHeight;
-
-    const mapWidth = (maxX - minX) * transform.k;
-    const mapHeight = (maxY - minY) * transform.k;
-
-    let x = transform.x;
-    let y = transform.y;
-
-    // --------------------------------
-    // Horizontal boundary
-    // --------------------------------
-
-    if (mapWidth <= viewportWidth) {
-      x = (viewportWidth - mapWidth) / 2 - minX * transform.k;
-    } else {
-      const minTranslate = viewportWidth - maxX * transform.k;
-
-      const maxTranslate = -minX * transform.k;
-
-      x = Math.max(minTranslate, Math.min(maxTranslate, x));
-    }
-
-    // --------------------------------
-    // Vertical boundary
-    // --------------------------------
-
-    if (mapHeight <= viewportHeight) {
-      y = (viewportHeight - mapHeight) / 2 - minY * transform.k;
-    } else {
-      const minTranslate = viewportHeight - maxY * transform.k;
-
-      const maxTranslate = -minY * transform.k;
-
-      y = Math.max(minTranslate, Math.min(maxTranslate, y));
-    }
-
-    return d3.zoomIdentity.translate(x, y).scale(transform.k);
-  }
 
   // --------------------------------
   // Pan
@@ -129,6 +130,8 @@ export default function MapInteraction({
       x: event.clientX,
       y: event.clientY,
     };
+
+    setIsDragging(true);
   }
 
   function handlePointerMove(event) {
@@ -151,7 +154,17 @@ export default function MapInteraction({
       .translate(zoomTransform.x + dx, zoomTransform.y + dy)
       .scale(zoomTransform.k);
 
-    onZoom(constrainTransform(nextTransform));
+    const constrainedTransform = constrainTransform(
+      nextTransform,
+      underlyingGrid,
+      projection,
+      interactionRef.current,
+    );
+
+    onZoom(constrainedTransform);
+
+    // Keep D3's wheel-zoom baseline aligned with the React transform.
+    d3.select(event.currentTarget).property("__zoom", constrainedTransform);
   }
 
   function handlePointerUp(event) {
@@ -160,6 +173,7 @@ export default function MapInteraction({
     }
 
     dragRef.current = null;
+    setIsDragging(false);
 
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
@@ -207,7 +221,7 @@ export default function MapInteraction({
       ref={interactionRef}
       className="absolute inset-0 z-10 bg-transparent"
       style={{
-        cursor: dragRef.current ? "grabbing" : "grab",
+        cursor: isDragging ? "grabbing" : "grab",
         touchAction: "none",
       }}
       onMouseMove={handleMouseMove}
@@ -216,6 +230,7 @@ export default function MapInteraction({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
+      onLostPointerCapture={handlePointerUp}
     />
   );
 }

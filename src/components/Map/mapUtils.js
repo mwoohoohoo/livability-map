@@ -90,10 +90,6 @@ export function drawGrid(context, projection, grid, weights, dealbreaker) {
 
   const colorScale = d3.scaleSequential(d3.interpolateViridis).domain([0, 1]);
 
-  const settings = {
-    dealbreaker,
-  };
-
   context.save();
 
   grid.forEach((cell) => {

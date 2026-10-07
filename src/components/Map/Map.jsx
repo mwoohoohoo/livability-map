@@ -76,16 +76,22 @@ export default function Map() {
   // --------------------------------
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function fetchMapData() {
       try {
         const [gridGeoJSON, underlyingGridGeoJSON] = await Promise.all([
-          loadGrid(),
-          loadUnderlyingGrid(),
+          loadGrid(controller.signal),
+          loadUnderlyingGrid(controller.signal),
         ]);
 
         setGrid(transformGrid(gridGeoJSON));
         setUnderlyingGrid(underlyingGridGeoJSON);
       } catch (err) {
+        if (err?.name === "AbortError") {
+          return;
+        }
+
         console.error("Failed to load map data:", err);
 
         setError(err);
@@ -93,6 +99,10 @@ export default function Map() {
     }
 
     fetchMapData();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   // --------------------------------

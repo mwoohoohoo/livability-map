@@ -1,5 +1,5 @@
-export async function loadGrid() {
-  const response = await fetch("/data/grid.geojson");
+export async function loadGrid(signal) {
+  const response = await fetch("/data/grid.geojson", { signal });
 
   if (!response.ok) {
     throw new Error(`Failed to load grid data: ${response.status}`);
@@ -10,8 +10,8 @@ export async function loadGrid() {
   return geojson;
 }
 
-export async function loadUnderlyingGrid() {
-  const response = await fetch("/data/underlying-grid.geojson");
+export async function loadUnderlyingGrid(signal) {
+  const response = await fetch("/data/underlying-grid.geojson", { signal });
 
   if (!response.ok) {
     throw new Error(`Failed to load underlying grid: ${response.status}`);
