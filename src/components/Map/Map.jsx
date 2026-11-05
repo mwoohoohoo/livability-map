@@ -23,6 +23,7 @@ import {
 import MapCanvas from "./MapCanvas";
 import MapInteraction from "./MapInteraction";
 import MapTooltip from "./MapTooltip";
+import WIP from "./WIP";
 import { createProjection } from "./mapUtils";
 
 import ScoreSidebar from "../ScoreControls/ScoreSidebar";
@@ -259,6 +260,7 @@ export default function Map() {
               mapHeight={height}
               finalScore={hoveredFinalScore}
             />
+            <WIP />
           </>
         )}
       </div>
