@@ -6,6 +6,7 @@ export default function ScoreControl({
   importance,
   removed,
   dealbreaker,
+  activeCount,
   onImportanceChange,
   onRemove,
   onDealbreakerChange,
@@ -13,6 +14,8 @@ export default function ScoreControl({
   const isDealbreaker = dealbreaker === variable.id;
 
   const dealbreakerDisabled = dealbreaker !== null && !isDealbreaker;
+
+  const importanceDisabled = removed || activeCount <= 1;
 
   const importanceLabel =
     IMPORTANCE_OPTIONS.find((option) => option.value === importance)?.label ??
@@ -22,6 +25,7 @@ export default function ScoreControl({
 
   return (
     <div className="border-b border-[var(--border)] py-5">
+      {/* Variable name */}
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-[var(--text-h)]">
           {variable.label}
@@ -30,14 +34,10 @@ export default function ScoreControl({
         {removed && <span className="text-xs text-[var(--text)]">Removed</span>}
       </div>
 
-      <div className={removed ? "opacity-40" : ""}>
+      {/* Importance */}
+      <div className={importanceDisabled ? "opacity-40" : ""}>
         <div className="mb-4 flex items-center justify-between text-xs">
-          <label
-            htmlFor={`${variable.id}-slider`}
-            className="text-[var(--text)]"
-          >
-            Importance
-          </label>
+          <span className="text-[var(--text)]">Importance</span>
 
           <span className="font-medium text-[var(--text-h)]">
             {importanceLabel}
@@ -48,7 +48,10 @@ export default function ScoreControl({
           id={`${variable.id}-slider`}
           aria-label={`${variable.label} importance`}
           aria-describedby={hintId}
-          aria-valuetext={importanceLabel}
+          getAriaValueText={(value) =>
+            IMPORTANCE_OPTIONS.find((option) => option.value === value)
+              ?.label ?? "Average"
+          }
           value={importance}
           min={1}
           max={5}
@@ -56,7 +59,7 @@ export default function ScoreControl({
           marks={IMPORTANCE_OPTIONS.map(({ value }) => ({
             value,
           }))}
-          disabled={removed}
+          disabled={importanceDisabled}
           valueLabelDisplay="off"
           onChange={(_, value) => {
             onImportanceChange(variable.id, value);
@@ -102,6 +105,7 @@ export default function ScoreControl({
         </div>
       </div>
 
+      {/* Dealbreaker / Remove */}
       <div className="mt-5 flex items-center justify-between text-xs">
         <label
           className={`
