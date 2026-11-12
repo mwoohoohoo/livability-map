@@ -47,7 +47,7 @@ To suppress this warning, you need to explicitly provide the \`palette.${t}Chann
                 font-medium text-white transition hover:opacity-80
                 focus-visible:outline-2 focus-visible:outline-offset-4
                 focus-visible:outline-[var(--text-h)]
-              `,children:`Continue`})}),r===`filters`&&(0,I.jsxs)(`section`,{className:`py-6`,children:[(0,I.jsx)(`h2`,{className:`mb-2 text-xl font-medium text-[var(--text-h)]`,children:`1. Filters`}),(0,I.jsx)(`p`,{className:`mb-6 text-sm text-[var(--text)]`,children:`Select the factors you want to use.`}),(0,I.jsx)(`div`,{className:`flex flex-wrap gap-2`,children:e.map(e=>{let n=!t.removed.includes(e.id);return(0,I.jsx)(`button`,{type:`button`,"aria-pressed":n,onClick:()=>o(e.id),className:`
+              `,children:`Continue`})}),r===`filters`&&(0,I.jsxs)(`section`,{className:`py-6`,children:[(0,I.jsx)(`h2`,{className:`mb-2 text-xl font-medium text-[var(--text-h)]`,children:`1. Filters`}),(0,I.jsx)(`p`,{className:`mb-6 text-sm text-[var(--text)]`,children:`Select the factors you want to use.`}),(0,I.jsx)(`div`,{className:`flex flex-wrap gap-2 mt-6`,children:e.map(e=>{let n=!t.removed.includes(e.id);return(0,I.jsx)(`button`,{type:`button`,"aria-pressed":n,onClick:()=>o(e.id),className:`
                       rounded-full border px-4 py-2 text-sm
                       transition-colors
                       focus-visible:outline-2
