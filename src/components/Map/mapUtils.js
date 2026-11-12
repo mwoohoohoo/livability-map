@@ -13,7 +13,7 @@ export function createProjection(
   grid,
   width,
   height,
-  { availableLeft = 0, availableRight = width, fitToHeight = false } = {},
+  { availableLeft = 0, availableRight = width } = {},
 ) {
   const featureCollection = {
     type: "FeatureCollection",
@@ -26,38 +26,28 @@ export function createProjection(
 
   const projection = d3.geoIdentity().reflectY(true);
 
-  if (!fitToHeight) {
-    return projection.fitExtent(
-      [
-        [availableLeft + 40, 40],
-        [availableRight - 40, height - 40],
-      ],
-      featureCollection,
-    );
-  }
+  const sourceBounds = d3
+    .geoPath(d3.geoIdentity())
+    .bounds(featureCollection);
 
-  // First fit to the full available height.
-  const heightProjection = projection.fitExtent(
-    [
-      [0, 40],
-      [width, height - 40],
-    ],
-    featureCollection,
-  );
+  const sourceCenterX = (sourceBounds[0][0] + sourceBounds[1][0]) / 2;
+  const sourceCenterY = (sourceBounds[0][1] + sourceBounds[1][1]) / 2;
+  const sourceHeight = sourceBounds[1][1] - sourceBounds[0][1];
 
-  // Then shift the projection horizontally so that the scored
-  // area is centred in the space available beside the sidebar.
-  const bounds = d3.geoPath(heightProjection).bounds(featureCollection);
+  // Keep the existing vertical breathing room on normal viewports,
+  // but reduce it on very short viewports so the base map still
+  // covers the full viewport height.
+  const verticalPadding = Math.min(40, height * 0.1);
 
-  const mapCenterX = (bounds[0][0] + bounds[1][0]) / 2;
+  const scale = (height - verticalPadding * 2) / sourceHeight;
   const availableCenterX = (availableLeft + availableRight) / 2;
 
-  heightProjection.translate([
-    heightProjection.translate()[0] + availableCenterX - mapCenterX,
-    heightProjection.translate()[1],
+  projection.scale(scale).translate([
+    availableCenterX - scale * sourceCenterX,
+    height / 2 + scale * sourceCenterY,
   ]);
 
-  return heightProjection;
+  return projection;
 }
 
 /**

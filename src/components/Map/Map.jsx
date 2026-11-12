@@ -70,7 +70,8 @@ export default function Map() {
   // Filters UI
   // --------------------------------
 
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [walkthroughStep, setWalkthroughStep] = useState("intro");
 
   // --------------------------------
   // Load data
@@ -148,13 +149,11 @@ export default function Map() {
       return null;
     }
 
-    const hasSidebar = width >= 1580;
-    const sidebarWidth = hasSidebar ? 360 : 0;
+    const sidebarWidth = width >= 1580 ? 360 : 0;
 
     return createProjection(grid, width, height, {
       availableLeft: sidebarWidth,
       availableRight: width,
-      fitToHeight: hasSidebar,
     });
   }, [grid, width, height]);
 
@@ -164,6 +163,10 @@ export default function Map() {
 
   const handleZoom = useCallback((transform) => {
     setZoomTransform(transform);
+  }, []);
+
+  const handleCloseFilters = useCallback(() => {
+    setFiltersOpen(false);
   }, []);
 
   function handleHover(cell, position) {
@@ -189,15 +192,14 @@ export default function Map() {
       if (isCurrentlyRemoved) {
         return {
           ...previous,
+          [variableId]: 3,
           removed: previous.removed.filter((id) => id !== variableId),
         };
       }
 
       return {
         ...previous,
-
         removed: [...previous.removed, variableId],
-
         dealbreaker:
           previous.dealbreaker === variableId ? null : previous.dealbreaker,
       };
@@ -281,6 +283,8 @@ export default function Map() {
           variables={VARIABLES}
           settings={scoreSettings}
           defaultSettings={defaultSettings}
+          step={walkthroughStep}
+          onStepChange={setWalkthroughStep}
           onImportanceChange={handleImportanceChange}
           onRemove={handleRemove}
           onDealbreakerChange={handleDealbreakerChange}
@@ -305,10 +309,12 @@ export default function Map() {
       {/* Overlay / bottom sheet on narrower screens */}
       <ScoreSheet
         isOpen={filtersOpen}
-        onClose={() => setFiltersOpen(false)}
+        onClose={handleCloseFilters}
         variables={VARIABLES}
         settings={scoreSettings}
         defaultSettings={defaultSettings}
+        step={walkthroughStep}
+        onStepChange={setWalkthroughStep}
         onImportanceChange={handleImportanceChange}
         onRemove={handleRemove}
         onDealbreakerChange={handleDealbreakerChange}

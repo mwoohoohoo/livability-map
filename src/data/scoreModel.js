@@ -48,7 +48,8 @@ export function createDefaultSettings() {
     international: 3,
     climbing: 3,
 
-    removed: [],
+    // No filters selected initially.
+    removed: VARIABLES.map((variable) => variable.id),
 
     dealbreaker: null,
   };
