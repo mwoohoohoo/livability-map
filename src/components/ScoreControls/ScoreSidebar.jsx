@@ -94,7 +94,7 @@ export default function ScoreSidebar({
               Select the factors you want to use.
             </p>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mt-6">
               {variables.map((variable) => {
                 const selected = !settings.removed.includes(variable.id);
 
