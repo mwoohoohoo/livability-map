@@ -73,8 +73,8 @@ export default function ScoreSidebar({
               type="button"
               onClick={() => onStepChange("filters")}
               className="
-                rounded-full bg-black px-5 py-3 text-sm
-                font-medium text-white transition hover:opacity-80
+                rounded-full bg-[var(--cta)] px-5 py-3 text-sm
+                font-medium text-white transition hover:bg-[var(--cta-hover)]
                 focus-visible:outline-2 focus-visible:outline-offset-4
                 focus-visible:outline-[var(--text-h)]
               "
@@ -112,7 +112,7 @@ export default function ScoreSidebar({
                       focus-visible:outline-[var(--text-h)]
                       ${
                         selected
-                          ? "border-[var(--text-h)] bg-[var(--text-h)] text-white"
+                          ? "border-[var(--text-h)] bg-transparent text-[var(--text-h)]"
                           : "border-[var(--border)] bg-white text-[var(--text-h)] hover:bg-[var(--code-bg)]"
                       }
                     `}
@@ -129,11 +129,12 @@ export default function ScoreSidebar({
                 disabled={selectedCount === 0}
                 onClick={() => onStepChange("weighting")}
                 className="
-                  rounded-full bg-black px-5 py-3 text-sm
-                  font-medium text-white transition hover:opacity-80
+                  rounded-full bg-[var(--cta)] px-5 py-3 text-sm
+                  font-medium text-white transition hover:bg-[var(--cta-hover)]
                   disabled:cursor-not-allowed
-                  disabled:bg-gray-300 disabled:text-gray-500
-                  disabled:hover:opacity-100
+                  disabled:bg-[var(--cta-disabled)]
+                  disabled:text-white
+                  disabled:hover:bg-[var(--cta-disabled)]
                   focus-visible:outline-2 focus-visible:outline-offset-4
                   focus-visible:outline-[var(--text-h)]
                 "
@@ -177,26 +178,52 @@ export default function ScoreSidebar({
               </p>
             )}
 
-            {variables.map((variable) => (
-              <ScoreControl
-                key={variable.id}
-                variable={variable}
-                importance={settings[variable.id]}
-                removed={settings.removed.includes(variable.id)}
-                dealbreaker={settings.dealbreaker}
-                activeCount={selectedCount}
-                onImportanceChange={onImportanceChange}
-                onRemove={onRemove}
-                onDealbreakerChange={onDealbreakerChange}
-              />
-            ))}
+            {selectedCount === 0 ? (
+              <div className="rounded-lg bg-[var(--code-bg)] p-4">
+                <p className="mb-4 text-sm text-[var(--text)]">
+                  No filters selected.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => onStepChange("filters")}
+                  className="
+                    rounded-full bg-[var(--cta)] px-4 py-2 text-sm
+                    font-medium text-white transition
+                    hover:bg-[var(--cta-hover)]
+                    focus-visible:outline-2 focus-visible:outline-offset-4
+                    focus-visible:outline-[var(--text-h)]
+                  "
+                >
+                  Back to filters
+                </button>
+              </div>
+            ) : (
+              variables
+                .filter(
+                  (variable) => !settings.removed.includes(variable.id),
+                )
+                .map((variable) => (
+                  <ScoreControl
+                    key={variable.id}
+                    variable={variable}
+                    importance={settings[variable.id]}
+                    removed={settings.removed.includes(variable.id)}
+                    dealbreaker={settings.dealbreaker}
+                    activeCount={selectedCount}
+                    onImportanceChange={onImportanceChange}
+                    onRemove={onRemove}
+                    onDealbreakerChange={onDealbreakerChange}
+                  />
+                ))
+            )}
           </section>
         )}
       </div>
 
       {/* Footer */}
       {step !== "intro" && (
-        <footer className="flex shrink-0 border-t border-[var(--border)] p-5">
+        <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-[var(--border)] p-5">
           <button
             type="button"
             onClick={onReset}
@@ -212,6 +239,22 @@ export default function ScoreSidebar({
           >
             Reset
           </button>
+
+          {isSheet && step === "weighting" && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="
+                rounded-full bg-[var(--cta)] px-4 py-2 text-sm
+                font-medium text-white transition
+                hover:bg-[var(--cta-hover)]
+                focus-visible:outline-2 focus-visible:outline-offset-4
+                focus-visible:outline-[var(--text-h)]
+              "
+            >
+              Apply filters
+            </button>
+          )}
         </footer>
       )}
     </aside>

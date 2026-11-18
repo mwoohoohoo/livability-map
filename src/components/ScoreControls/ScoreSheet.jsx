@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import ScoreSidebar from "./ScoreSidebar";
 
+const SHEET_EXPANDED_TOP_GAP_PX = 40;
+
 export default function ScoreSheet({
   isOpen,
   onClose,
@@ -15,6 +17,10 @@ export default function ScoreSheet({
   onDealbreakerChange,
   onReset,
 }) {
+  const isExpanded = step !== "intro";
+
+  const expandedHeight = `calc(100dvh - ${SHEET_EXPANDED_TOP_GAP_PX}px)`;
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -126,10 +132,10 @@ export default function ScoreSheet({
             aria-label="Scoring walkthrough"
             tabIndex={-1}
             className="
-              fixed inset-x-0 bottom-0 z-50 h-[100dvh] md:hidden
+              fixed inset-x-0 bottom-0 z-50 overflow-hidden md:hidden
             "
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
+            initial={{ y: "100%", height: isExpanded ? expandedHeight : "auto" }}
+            animate={{ y: 0, height: isExpanded ? expandedHeight : "auto" }}
             exit={{ y: "100%" }}
             transition={{ type: "tween", duration: 0.3 }}
           >

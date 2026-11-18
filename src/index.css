@@ -6,6 +6,9 @@
   --bg: #b9f4ff;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
+  --cta: #7e87f2;
+  --cta-hover: #5b69d0;
+  --cta-disabled: #b7b5e4;
   --accent: #aa3bff;
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
@@ -55,11 +58,11 @@ h2 {
 }
 
 h1 {
-  font-size: 56px;
+  font-size: 44px;
   letter-spacing: -1.68px;
   margin: 32px 0;
   @media (max-width: 1024px) {
-    font-size: 36px;
+    font-size: 32px;
     margin: 20px 0;
   }
 }
